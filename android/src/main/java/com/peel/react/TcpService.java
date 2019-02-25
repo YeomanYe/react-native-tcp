@@ -24,8 +24,6 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -136,10 +134,10 @@ public class TcpService extends Service implements TcpSocketListener {
         }.execute();
     }
 
-    private List<Timer> timers = new ArrayList<>();
+    private Timer timer;
 
     public void invokeInterval(final Integer cId,final Integer period){
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -152,7 +150,6 @@ public class TcpService extends Service implements TcpSocketListener {
                 handler.sendMessage(msg);
             }
         },0,period);
-        timers.add(timer);
     }
 
     private Handler handler = new Handler(){
@@ -255,7 +252,7 @@ public class TcpService extends Service implements TcpSocketListener {
         WritableMap eventParams = Arguments.createMap();
         eventParams.putInt("id", id);
         eventParams.putBoolean("hadError", error != null);
-
+        timer.cancel();
         sendEvent("close", eventParams);
     }
 
@@ -268,7 +265,7 @@ public class TcpService extends Service implements TcpSocketListener {
         WritableMap eventParams = Arguments.createMap();
         eventParams.putInt("id", id);
         eventParams.putString("error", error);
-
+        timer.cancel();
         sendEvent("error", eventParams);
     }
 }
