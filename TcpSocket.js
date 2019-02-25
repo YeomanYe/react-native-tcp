@@ -278,6 +278,12 @@ TcpSocket.prototype._registerEvents = function(): void {
         return;
       }
       this._onError(ev.error);
+    }),
+    this._eventEmitter.addListener('interval', ev => {
+      if (this._id !== ev.id) {
+        return;
+      }
+      this._onInterval();
     })
   ];
 };
@@ -352,6 +358,13 @@ TcpSocket.prototype.write = function(chunk, encoding, cb) {
 
   return stream.Duplex.prototype.write.apply(this, arguments);
 };
+
+
+TcpSocket.prototype.invokeInterval = function(period,fn){
+  Sockets.invokeInterval(this._id,period);
+  TcpSocket.prototype._onInterval = fn;
+  return true;
+}
 
 TcpSocket.prototype._write = function(buffer: any, encoding: ?String, callback: ?(err: ?Error) => void) : boolean {
   var self = this;

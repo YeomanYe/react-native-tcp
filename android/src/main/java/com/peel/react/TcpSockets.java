@@ -77,6 +77,11 @@ public final class TcpSockets extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void invokeInterval(Integer cId,Integer period){
+        service.invokeInterval(cId,period);
+    }
+
+    @ReactMethod
     public void write(final Integer cId, final String base64String, final Callback callback) {
         service.write(cId,base64String,callback);
     }

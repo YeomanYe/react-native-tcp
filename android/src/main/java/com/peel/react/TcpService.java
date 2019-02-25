@@ -3,7 +3,10 @@ package com.peel.react;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
@@ -21,6 +24,10 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 public class TcpService extends Service implements TcpSocketListener {
@@ -129,6 +136,36 @@ public class TcpService extends Service implements TcpSocketListener {
         }.execute();
     }
 
+    private List<Timer> timers = new ArrayList<>();
+
+    public void invokeInterval(final Integer cId,final Integer period){
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Message msg = new Message();
+                Bundle bundle = new Bundle();
+                bundle.putInt("cId",cId);
+
+                msg.what = 0;
+                msg.setData(bundle);
+                handler.sendMessage(msg);
+            }
+        },0,period);
+        timers.add(timer);
+    }
+
+    private Handler handler = new Handler(){
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case 0:
+                    Bundle bundle = msg.getData();
+                    onInterval(bundle.getInt("cId"));
+                    break;
+            }
+        }
+    };
+
     public void end(final Integer cId) {
         new GuardedAsyncTask<Void, Void>(ctx) {
             @Override
@@ -198,6 +235,12 @@ public class TcpService extends Service implements TcpSocketListener {
         eventParams.putString("data", Base64.encodeToString(data, Base64.NO_WRAP));
 
         sendEvent("data", eventParams);
+    }
+
+    public void onInterval(Integer id){
+        WritableMap eventParams = Arguments.createMap();
+        eventParams.putInt("id", id);
+        sendEvent("interval",eventParams);
     }
 
     @Override
