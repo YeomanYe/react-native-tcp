@@ -252,7 +252,7 @@ public class TcpService extends Service implements TcpSocketListener {
         WritableMap eventParams = Arguments.createMap();
         eventParams.putInt("id", id);
         eventParams.putBoolean("hadError", error != null);
-        timer.cancel();
+        destroyTimer();
         sendEvent("close", eventParams);
     }
 
@@ -265,7 +265,14 @@ public class TcpService extends Service implements TcpSocketListener {
         WritableMap eventParams = Arguments.createMap();
         eventParams.putInt("id", id);
         eventParams.putString("error", error);
-        timer.cancel();
+        destroyTimer();
         sendEvent("error", eventParams);
+    }
+
+    private void destroyTimer(){
+        if(timer != null){
+            timer.cancel();
+            timer = null;
+        }
     }
 }
